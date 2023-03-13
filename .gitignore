@@ -1,0 +1,10 @@
+*.class
+*.log
+
+# Prevent directories from being put on github
+.idea/
+.vscode/
+.bsp/
+.bloop/
+project/
+target/
