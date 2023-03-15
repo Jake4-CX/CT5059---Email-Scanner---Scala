@@ -1,0 +1,11 @@
+Hello Michael,
+
+We are writing to inform you about a security update that you need to implement immediately. Our security team has detected potential vulnerabilities in the system, which could lead to a possible attack. We have taken measures to address these issues, but we need your cooperation to ensure the safety and security of our company's data.
+
+Please follow the instructions in the attached document to update your system. If you have any questions or concerns, please contact our IT department as soon as possible.
+
+Thank you for your attention to this matter.
+
+Best regards,
+
+John

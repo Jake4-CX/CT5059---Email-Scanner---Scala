@@ -2,11 +2,16 @@ package lat.jack.emailscanner
 
 import java.io.File
 import scala.collection.MapView
+import scala.collection.immutable.HashMap
 import scala.io.Source
 
 object Main {
   private val illegalPhrases: List[String] = List("threat", "vulnerabilities", "attack", "loopholes", "whitelist", "blacklist", "hash", "encryption")
   private val minimumIllegalPhraseCount: Int = 5
+  private case class Email(email: String, illegalPhrases: List[String], illegalPhraseCount: Int, suspicious: Boolean)
+  private val emails: HashMap[String, Email] = HashMap[String, Email]()
+
+  // Create a
 
   private def readFile(fileName: String): String = {
     val file = Source.fromFile(fileName)
@@ -63,10 +68,15 @@ object Main {
   private def scanEmail(emailInput: String) = {
     var email: String = emailInput
 
-    println("Scanning email...")
-    println(s"Email: ${email}")
-
     email = email.toLowerCase() // Normalize the string - to lowercase
+
+    email = email // Replace all characters that have accents with their non-accented equivalent
+      .replaceAll("[áàâãåä]", "a")
+      .replaceAll("[éèêë]", "e")
+      .replaceAll("[íìîï]", "i")
+      .replaceAll("[óòôõö]", "o")
+      .replaceAll("[úùûü]", "u")
+      .replaceAll("ç", "c")
 
     val emailInputWords: Array[String] = email.split(" ")
 
@@ -93,6 +103,7 @@ object Main {
     println(s"Total Illegal Phrases Used: $illegalPhraseCount")
     println(s"Illegal Phrases used $build")
     println("")
+
     if (wordOccurrences.length > 5 && illegalPhraseCount >= minimumIllegalPhraseCount) {
       println("This is a Suspicious File")
     } else {

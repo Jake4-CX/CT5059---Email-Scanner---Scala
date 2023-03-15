@@ -1,0 +1,11 @@
+Hello Alex,
+
+We are writing to inform you about an unauthorized access attempt that was made on our company's server. Our security team detected this attempt and took immediate action to prevent any further intrusion.
+
+As a precautionary measure, we recommend that you change your login credentials and enable two-factor authentication for your account. We also advise that you be extra vigilant when opening emails or clicking on links from unknown sources.
+
+If you have any questions or concerns, please contact our IT department as soon as possible.
+
+Best regards,
+
+David
