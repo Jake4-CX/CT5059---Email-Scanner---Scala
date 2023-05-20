@@ -1,0 +1,13 @@
+Hello Mark,
+
+We regret to inform you that our company has suffered a data breach. Our security team has identified that hackers were able to access our system and potentially compromise sensitive information.
+
+We are taking immediate action to mitigate the damage, but we need your help to ensure that the situation is contained. Please follow the instructions in the attached document to reset your password and review your account activity for any suspicious behavior.
+
+We understand that this may be a stressful and concerning situation, but we assure you that we are doing everything we can to protect our company's data and your personal information.
+
+Please contact our IT department if you have any questions or concerns.
+
+Sincerely,
+
+The Management Team

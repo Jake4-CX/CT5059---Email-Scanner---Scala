@@ -4,6 +4,6 @@ ThisBuild / scalaVersion := "3.2.2"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "CT5059---Email-Scanner---Scala",
-    idePackagePrefix := Some("lat.jack.emailscanner")
+    name := "EmailScanner",
+    mainClass in (Compile, run) := Some("lat.jack.emailscanner.Main")
   )
