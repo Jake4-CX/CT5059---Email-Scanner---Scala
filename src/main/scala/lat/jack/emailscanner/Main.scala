@@ -7,11 +7,16 @@ import scala.io.Source
 
 object Main {
   private val illegalPhrases: List[String] = List("threat", "vulnerabilities", "attack", "loopholes", "whitelist", "blacklist", "hash", "encryption")
+  private val ignoredConnectedWords: List [String] = List("the", "a", "an", "and", "or", "but", "nor", "for", "yet", "so", "of", "to", "in", "on", "at", "by", "about", "as", "into", "like", "through", "after", "over", "between", "out", "against", "during", "without", "before", "under", "around", "among")
   private val minimumIllegalPhraseCount: Int = 5
 
   private class Report(val email: String, val illegalPhrases: Seq[(String, Int)], val illegalPhraseCount: Int, val wordOccurrences: Seq[(String, Int)], val suspicious: Boolean)
 
   private def readFile(fileName: String): String = {
+    if (!new File(fileName).exists()) {
+      println(s"Error, file '${fileName}' does not exist.")
+      return null
+    }
     val file = Source.fromFile(fileName)
     val fileContents = file.mkString
     file.close()
@@ -48,6 +53,7 @@ object Main {
     } else if (args.length == 2) {
       if (args(0) == "-F") { // Read a single file
         val fileContents = readFile(args(1))
+        if (fileContents == null) return // Error reading file
         val report = scanEmail(fileContents)
         analyseReport(report)
 
@@ -73,25 +79,17 @@ object Main {
 
   private def analyseReport(report: Report): Unit = {
 
-    var build = ""
-    var i = 0
-
-    for (illegalPhrase <- report.illegalPhrases) {
-      build += illegalPhrase._1 + s" (${illegalPhrase._2})"
-
-      if (i < report.illegalPhrases.length - 1) {
-        build += ", "
-      } else build += "."
-      i += 1
-    }
+    val phrasesUsed: Seq[(String, Int)] = report.wordOccurrences.filter(word => !ignoredConnectedWords.contains(word._1)).slice(0, 9)
 
     println(s"Email: '${report.email}'")
     println("")
+    println(s"Total Words: ${report.wordOccurrences.map(_._2).sum}")
     println(s"Total Illegal Phrases Used: ${report.illegalPhraseCount}")
-    println(s"Illegal Phrases used '${build}'")
+    println(s"Most Common Words Used: '${formatOccurrences(phrasesUsed)}'")
+    println(s"Illegal Phrases used '${formatOccurrences(report.illegalPhrases)}'")
     println("")
 
-    if (report.wordOccurrences.length > 5 && report.illegalPhraseCount >= minimumIllegalPhraseCount) {
+    if (report.wordOccurrences.length > 5 && report.suspicious) {
       println("This is a Suspicious File")
     } else {
       println("This file is Benign")
@@ -107,8 +105,8 @@ object Main {
     }
 
     val totalIllegalPhrasesUsed: Int = reports.map(_.illegalPhraseCount).sum
-    val mostCommonIllegalPhrase: String = reports.flatMap(_.illegalPhrases).groupBy(_._1).mapValues(_.map(_._2).sum).maxBy(_._2)._1
-    val leastCommonIllegalPhrase: String = reports.flatMap(_.illegalPhrases).groupBy(_._1).mapValues(_.map(_._2).sum).minBy(_._2)._1
+    val mostCommonIllegalPhrase: String = reports.flatMap(_.illegalPhrases).groupBy(_._1).view.mapValues(_.map(_._2).sum).maxBy(_._2)._1
+    val leastCommonIllegalPhrase: String = reports.flatMap(_.illegalPhrases).groupBy(_._1).view.mapValues(_.map(_._2).sum).minBy(_._2)._1
     val averageIllegalPhrasesUsed: Double = totalIllegalPhrasesUsed.toDouble / reports.length.toDouble
     val totalSuspicious: Int = reports.count(_.suspicious)
 
@@ -125,12 +123,29 @@ object Main {
 
   }
 
+  private def formatOccurrences(occurrences: Seq[(String, Int)]): String = {
+    // Formatting word occurrences into a string (goal: 'word (count), word (count), word (count)')
+    var build = ""
+    var i = 0
+
+    for (occurrence <- occurrences) {
+      build += occurrence._1 + s" (${occurrence._2})"
+
+      if (i < occurrences.length - 1) {
+        build += ", "
+      } else build += "."
+      i += 1
+    }
+
+    build
+  }
+
   private def scanEmail(emailInput: String): Report = {
     var email: String = emailInput
 
     email = email.toLowerCase() // Normalize the string - to lowercase
 
-    email = email // Replace characters which contain accents with their non-accented equivalent
+    email = email // remove accents to prevent an attempt to bypass the filter
       .replaceAll("[áàâãåä]", "a")
       .replaceAll("[éèêë]", "e")
       .replaceAll("[íìîï]", "i")
@@ -138,7 +153,7 @@ object Main {
       .replaceAll("[úùûü]", "u")
       .replaceAll("ç", "c")
 
-    val emailInputWords: Array[String] = email.split("\\W+") // Split each word into a string (also on punctuation etc)
+    val emailInputWords: Array[String] = email.split("\\W+") // Split each word into a string
 
     val wordOccurrences: Seq[(String, Int)] = emailInputWords.groupMapReduce(identity)(_ => 1)(_ + _).toSeq.sortWith(_._2 > _._2)
     val illegalPhrasesUsed: Seq[(String, Int)] = wordOccurrences.filter(phrase => illegalPhrases.contains(phrase._1))
